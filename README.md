@@ -152,8 +152,27 @@ Plugin (TypeScript)
 │   ├── Semantic Clustering (sentence-transformers)
 │   ├── Definition Extraction (spaCy + patterns)
 │   └── Keyword Extraction
-└── Dashboard Generation (Markdown)
+└── Dashboard Generation (Pluggable View System)
+    ├── High-Frequency View (≥20 occurrences)
+    ├── Medium-Frequency View (5-19 occurrences)
+    ├── Low-Frequency View (1-4 occurrences)
+    └── Custom Views (extensible)
 ```
+
+### 🎨 Pluggable View System
+
+The plugin features a **production-grade pluggable view system** that allows you to:
+
+- Create custom dashboard layouts
+- Enable/disable view types
+- Extend with your own views
+- Control view selection and priorities
+
+See **[PLUGGABLE_VIEWS.md](./PLUGGABLE_VIEWS.md)** for complete documentation on:
+- Creating custom views
+- View selection algorithm
+- Configuration options
+- Advanced features
 
 ## Use Cases
 
@@ -187,9 +206,21 @@ Your ideal thresholds depend on vault size:
 
 Use **Show tag statistics** to see your tag distribution and adjust accordingly.
 
-### Dashboard Templates
+### Dashboard Views
 
-Edit `src/generators/dashboard-generator.ts` to customize dashboard structure.
+**NEW**: The plugin now uses a pluggable view system!
+
+In Settings → Concept Dashboard → Dashboard Views:
+- Enable/disable specific view types
+- See which views are active
+- Configure view priorities
+
+For advanced customization:
+- Create custom dashboard layouts
+- Override existing views
+- Add specialized views for your use cases
+
+See [PLUGGABLE_VIEWS.md](./PLUGGABLE_VIEWS.md) for the complete guide.
 
 ### Analysis Parameters
 

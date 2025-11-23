@@ -1,5 +1,6 @@
 import { App, PluginSettingTab, Setting } from 'obsidian';
 import ConceptDashboardPlugin from '../main';
+import { globalViewRegistry } from './views';
 
 export class ConceptDashboardSettingTab extends PluginSettingTab {
     plugin: ConceptDashboardPlugin;
@@ -235,6 +236,42 @@ export class ConceptDashboardSettingTab extends PluginSettingTab {
                     await this.plugin.saveSettings();
                 })
             );
+
+        // === Dashboard Views ===
+        containerEl.createEl('h3', { text: 'Dashboard Views' });
+
+        const viewsDesc = containerEl.createDiv({ cls: 'concept-dashboard-views-desc' });
+        viewsDesc.createEl('p', {
+            text: 'Configure which dashboard view types are enabled. The system automatically selects the best view based on concept frequency.'
+        });
+
+        const viewConfigs = globalViewRegistry.getViewConfigs();
+        const stats = globalViewRegistry.getStats();
+
+        if (viewConfigs.length > 0) {
+            const statsDiv = containerEl.createDiv({ cls: 'concept-dashboard-stats' });
+            statsDiv.createEl('p', {
+                text: `📊 ${stats.total} views registered (${stats.enabled} enabled, ${stats.disabled} disabled)`
+            });
+
+            for (const config of viewConfigs) {
+                new Setting(containerEl)
+                    .setName(config.name)
+                    .setDesc(`${config.description} • Priority: ${config.priority}`)
+                    .addToggle(toggle => toggle
+                        .setValue(config.enabled)
+                        .onChange(async (value) => {
+                            globalViewRegistry.updateViewConfig(config.id, { enabled: value });
+                            await this.plugin.saveSettings();
+                            this.display(); // Refresh to update stats
+                        })
+                    );
+            }
+        } else {
+            containerEl.createEl('p', {
+                text: 'No dashboard views registered. This should not happen.'
+            });
+        }
 
         // === Info Section ===
         containerEl.createEl('h3', { text: 'Python Setup' });
