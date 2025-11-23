@@ -1,0 +1,34 @@
+/* Concept Dashboard Plugin Styles */
+
+.concept-dashboard-info {
+    padding: 1em;
+    background: var(--background-secondary);
+    border-radius: 5px;
+    margin-top: 1em;
+}
+
+.concept-dashboard-info p {
+    margin: 0.5em 0;
+}
+
+.concept-dashboard-info code {
+    background: var(--background-primary);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: var(--font-monospace);
+}
+
+/* Dashboard notes styling */
+.markdown-preview-view h1 + blockquote {
+    border-left: 3px solid var(--interactive-accent);
+    padding-left: 1em;
+    font-size: 0.9em;
+    opacity: 0.8;
+}
+
+/* Key passages blockquotes */
+.markdown-preview-view blockquote {
+    border-left: 2px solid var(--text-muted);
+    padding-left: 1em;
+    font-style: italic;
+}

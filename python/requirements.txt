@@ -1,0 +1,16 @@
+# Python dependencies for Concept Dashboard NLP analysis
+
+# Sentence embeddings for semantic clustering
+sentence-transformers>=2.2.0
+
+# Machine learning for clustering
+scikit-learn>=1.0.0
+
+# NLP for definition extraction (optional but recommended)
+spacy>=3.0.0
+
+# Numerical operations
+numpy>=1.21.0
+
+# Note: After installing requirements, download spaCy model:
+# python -m spacy download en_core_web_sm
