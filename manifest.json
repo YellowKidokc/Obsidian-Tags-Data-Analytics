@@ -1,0 +1,11 @@
+{
+  "id": "concept-dashboard",
+  "name": "Concept Dashboard",
+  "version": "1.0.0",
+  "minAppVersion": "0.15.0",
+  "description": "Generate rich analytical dashboards for tags and concepts in your vault with NLP-powered insights",
+  "author": "Your Name",
+  "authorUrl": "https://github.com/yourusername",
+  "fundingUrl": "",
+  "isDesktopOnly": false
+}

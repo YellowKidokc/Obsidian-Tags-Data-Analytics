@@ -1,0 +1,36 @@
+# Logs
+*.log
+npm-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+
+# Dependency directory
+node_modules
+
+# Build
+main.js
+main.js.map
+*.js.map
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.python-version
+venv/
+env/
+*.egg-info/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test data
+test-vault/
