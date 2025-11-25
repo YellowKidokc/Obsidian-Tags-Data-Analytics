@@ -547,6 +547,8 @@ export class LowFrequencyView extends BaseDashboardView {
     }
 }
 
+import { CoherenceFactorView, BreakthroughFactorView } from './FactorViews';
+
 /**
  * Register all built-in views
  */
@@ -554,4 +556,6 @@ export function registerBuiltInViews(registry: any): void {
     registry.register(new HighFrequencyView());
     registry.register(new MediumFrequencyView());
     registry.register(new LowFrequencyView());
+    registry.register(new CoherenceFactorView());
+    registry.register(new BreakthroughFactorView());
 }

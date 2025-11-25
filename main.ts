@@ -3,13 +3,17 @@ import { PluginSettings, DEFAULT_SETTINGS, ConceptDashboard, ConceptRelation } f
 import { ConceptDashboardSettingTab } from './src/settings';
 import { TagExtractor } from './src/analysis/tag-extractor';
 import { ContextAnalyzer } from './src/analysis/context-analyzer';
+import { FactorAnalyzer } from './src/analysis/factor-analyzer';
 import { DashboardGenerator } from './src/generators/dashboard-generator';
+import { PostgresService } from './src/database/postgres-service';
 
 export default class ConceptDashboardPlugin extends Plugin {
     settings: PluginSettings;
     private tagExtractor: TagExtractor;
     private contextAnalyzer: ContextAnalyzer;
+    private factorAnalyzer: FactorAnalyzer;
     private dashboardGenerator: DashboardGenerator;
+    private postgresService: PostgresService | null = null;
 
     async onload() {
         await this.loadSettings();
@@ -20,7 +24,13 @@ export default class ConceptDashboardPlugin extends Plugin {
             this.settings.pythonPath,
             this.manifest.dir || ''
         );
+        this.factorAnalyzer = new FactorAnalyzer();
         this.dashboardGenerator = new DashboardGenerator();
+
+        // Initialize PostgreSQL if enabled
+        if (this.settings.enablePostgres) {
+            await this.initializePostgres();
+        }
 
         // Add settings tab
         this.addSettingTab(new ConceptDashboardSettingTab(this.app, this));
@@ -31,8 +41,41 @@ export default class ConceptDashboardPlugin extends Plugin {
         console.log('Concept Dashboard plugin loaded');
     }
 
-    onunload() {
+    async onunload() {
+        // Disconnect from PostgreSQL
+        if (this.postgresService) {
+            await this.postgresService.disconnect();
+        }
         console.log('Concept Dashboard plugin unloaded');
+    }
+
+    /**
+     * Initialize PostgreSQL connection
+     */
+    private async initializePostgres() {
+        try {
+            this.postgresService = new PostgresService(
+                this.settings.postgresHost,
+                this.settings.postgresPort,
+                this.settings.postgresDatabase,
+                this.settings.postgresUser,
+                this.settings.postgresPassword
+            );
+
+            const connected = await this.postgresService.connect();
+            if (connected) {
+                new Notice('PostgreSQL connected successfully');
+                // Optionally initialize schema
+                // await this.postgresService.initializeSchema();
+            } else {
+                new Notice('Failed to connect to PostgreSQL. Check settings.');
+                this.postgresService = null;
+            }
+        } catch (error) {
+            console.error('Error initializing PostgreSQL:', error);
+            new Notice(`PostgreSQL error: ${error.message}`);
+            this.postgresService = null;
+        }
     }
 
     private registerCommands() {
@@ -155,6 +198,25 @@ export default class ConceptDashboardPlugin extends Plugin {
                     lineNumber: o.lineNumber
                 }));
 
+            // Calculate coherence factor
+            notice?.setMessage(`Calculating coherence factor for ${tag}...`);
+            const coherenceFactor = this.factorAnalyzer.calculateCoherenceFactor(
+                tag,
+                occurrences,
+                clusters,
+                stats
+            );
+
+            // Calculate breakthrough factor
+            notice?.setMessage(`Calculating breakthrough factor for ${tag}...`);
+            const breakthroughFactor = this.factorAnalyzer.calculateBreakthroughFactor(
+                tag,
+                occurrences,
+                relations,
+                stats,
+                allOccurrences.size
+            );
+
             // Build dashboard
             const dashboard: ConceptDashboard = {
                 tag: tag,
@@ -169,6 +231,8 @@ export default class ConceptDashboardPlugin extends Plugin {
                 keyPassages: keyPassages,
                 openQuestions: openQuestions,
                 furtherReading: [],
+                coherenceFactor: coherenceFactor,
+                breakthroughFactor: breakthroughFactor,
                 lastUpdated: Date.now()
             };
 
@@ -185,6 +249,31 @@ export default class ConceptDashboardPlugin extends Plugin {
             const normalizedPath = normalizePath(filename);
 
             await this.app.vault.adapter.write(normalizedPath, markdown);
+
+            // Sync to PostgreSQL if enabled
+            if (this.settings.enablePostgres && this.settings.autoSyncToPostgres && this.postgresService) {
+                notice?.setMessage(`Syncing ${tag} to PostgreSQL...`);
+
+                // Sync occurrences
+                for (const occurrence of occurrences) {
+                    await this.postgresService.syncTagOccurrence(occurrence);
+                }
+
+                // Sync dashboard data
+                await this.postgresService.syncDashboard(dashboard);
+
+                // Sync co-occurrences
+                const allCoOccurrences = Array.from(coOccurrences.entries())
+                    .flatMap(([tag1, map]) =>
+                        Array.from(map.entries()).map(([tag2, count]) => ({
+                            tag1,
+                            tag2,
+                            count: count,
+                            contexts: [] // TODO: Extract actual contexts from occurrences
+                        }))
+                    );
+                await this.postgresService.syncCoOccurrences(allCoOccurrences);
+            }
 
             notice?.hide();
             new Notice(`Dashboard created: ${normalizedPath}`);

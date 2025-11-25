@@ -83,7 +83,49 @@ export interface ConceptDashboard {
     openQuestions: OpenQuestion[];
     furtherReading: FurtherReading[];
     timeline?: TimelineData;
+    coherenceFactor?: CoherenceFactor;
+    breakthroughFactor?: BreakthroughFactor;
     lastUpdated: number;
+}
+
+export interface CoherenceFactor {
+    score: number; // 0-100
+    consistencyScore: number; // How consistent is the tag usage across contexts
+    semanticStability: number; // How stable is the meaning across time
+    contextCohesion: number; // How well do contexts cluster together
+    definitionClarity: number; // How clearly defined is the concept
+    analysis: string; // Textual analysis of coherence
+    recommendations: string[];
+}
+
+export interface BreakthroughFactor {
+    score: number; // 0-100
+    noveltyScore: number; // How novel/unique is this concept
+    connectionDensity: number; // How well connected to other concepts
+    emergencePattern: number; // Pattern of emergence over time
+    conceptualLeap: number; // Degree of conceptual innovation
+    impactPotential: number; // Potential for future impact
+    analysis: string; // Textual analysis of breakthrough potential
+    keyInsights: string[];
+}
+
+export interface PostgresNode {
+    id: string; // UUID
+    tag: string;
+    content: string; // Sanitized content
+    context: string; // Sanitized context
+    file: string;
+    lineNumber: number;
+    timestamp: number;
+    occurrenceCount: number;
+    documentCount: number;
+    coherenceScore?: number;
+    breakthroughScore?: number;
+    metadata: Record<string, any>;
+    labels: string[];
+    classifications: string[];
+    createdAt: number;
+    updatedAt: number;
 }
 
 export interface TimelineData {
@@ -137,6 +179,15 @@ export interface PluginSettings {
     useSemanticScholar: boolean;
     openAIApiKey: string;
 
+    // PostgreSQL integration
+    enablePostgres: boolean;
+    postgresHost: string;
+    postgresPort: number;
+    postgresDatabase: string;
+    postgresUser: string;
+    postgresPassword: string;
+    autoSyncToPostgres: boolean;
+
     // UI preferences
     showProgressNotifications: boolean;
     defaultView: 'list' | 'graph' | 'timeline';
@@ -158,6 +209,13 @@ export const DEFAULT_SETTINGS: PluginSettings = {
     useWikipedia: false,
     useSemanticScholar: false,
     openAIApiKey: '',
+    enablePostgres: false,
+    postgresHost: 'localhost',
+    postgresPort: 5432,
+    postgresDatabase: 'obsidian_tags',
+    postgresUser: 'postgres',
+    postgresPassword: '',
+    autoSyncToPostgres: false,
     showProgressNotifications: true,
     defaultView: 'list'
 };

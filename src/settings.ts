@@ -209,6 +209,108 @@ export class ConceptDashboardSettingTab extends PluginSettingTab {
                 })
             );
 
+        // === PostgreSQL Integration ===
+        containerEl.createEl('h3', { text: 'PostgreSQL Integration' });
+
+        new Setting(containerEl)
+            .setName('Enable PostgreSQL')
+            .setDesc('Sync tag data to PostgreSQL database for advanced analytics and labeling')
+            .addToggle(toggle => toggle
+                .setValue(this.plugin.settings.enablePostgres)
+                .onChange(async (value) => {
+                    this.plugin.settings.enablePostgres = value;
+                    await this.plugin.saveSettings();
+                    this.display(); // Refresh to show/hide PostgreSQL settings
+                })
+            );
+
+        if (this.plugin.settings.enablePostgres) {
+            new Setting(containerEl)
+                .setName('PostgreSQL Host')
+                .setDesc('Database server hostname or IP')
+                .addText(text => text
+                    .setPlaceholder('localhost')
+                    .setValue(this.plugin.settings.postgresHost)
+                    .onChange(async (value) => {
+                        this.plugin.settings.postgresHost = value;
+                        await this.plugin.saveSettings();
+                    })
+                );
+
+            new Setting(containerEl)
+                .setName('PostgreSQL Port')
+                .setDesc('Database server port (default: 5432)')
+                .addText(text => text
+                    .setPlaceholder('5432')
+                    .setValue(this.plugin.settings.postgresPort.toString())
+                    .onChange(async (value) => {
+                        const num = parseInt(value);
+                        if (!isNaN(num) && num > 0) {
+                            this.plugin.settings.postgresPort = num;
+                            await this.plugin.saveSettings();
+                        }
+                    })
+                );
+
+            new Setting(containerEl)
+                .setName('Database Name')
+                .setDesc('Name of the PostgreSQL database')
+                .addText(text => text
+                    .setPlaceholder('obsidian_tags')
+                    .setValue(this.plugin.settings.postgresDatabase)
+                    .onChange(async (value) => {
+                        this.plugin.settings.postgresDatabase = value;
+                        await this.plugin.saveSettings();
+                    })
+                );
+
+            new Setting(containerEl)
+                .setName('Database User')
+                .setDesc('PostgreSQL username')
+                .addText(text => text
+                    .setPlaceholder('postgres')
+                    .setValue(this.plugin.settings.postgresUser)
+                    .onChange(async (value) => {
+                        this.plugin.settings.postgresUser = value;
+                        await this.plugin.saveSettings();
+                    })
+                );
+
+            new Setting(containerEl)
+                .setName('Database Password')
+                .setDesc('PostgreSQL password')
+                .addText(text => text
+                    .setPlaceholder('password')
+                    .setValue(this.plugin.settings.postgresPassword)
+                    .onChange(async (value) => {
+                        this.plugin.settings.postgresPassword = value;
+                        await this.plugin.saveSettings();
+                    })
+                    .then(text => {
+                        text.inputEl.type = 'password';
+                    })
+                );
+
+            new Setting(containerEl)
+                .setName('Auto-sync to PostgreSQL')
+                .setDesc('Automatically sync data after dashboard generation')
+                .addToggle(toggle => toggle
+                    .setValue(this.plugin.settings.autoSyncToPostgres)
+                    .onChange(async (value) => {
+                        this.plugin.settings.autoSyncToPostgres = value;
+                        await this.plugin.saveSettings();
+                    })
+                );
+
+            const pgInfoDiv = containerEl.createDiv({ cls: 'concept-dashboard-pg-info' });
+            pgInfoDiv.createEl('p', {
+                text: '💡 PostgreSQL stores sanitized tag data with UUIDs for systematic labeling and classification.'
+            });
+            pgInfoDiv.createEl('p', {
+                text: '📝 Run the schema.sql file to initialize your database: src/database/schema.sql'
+            });
+        }
+
         // === UI Preferences ===
         containerEl.createEl('h3', { text: 'UI Preferences' });
 
